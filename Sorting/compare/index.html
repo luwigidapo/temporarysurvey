@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Comparison</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #fullbody {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #mainlink {
+            float: right;
+            padding: 5px 10px;
+            margin: 5px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #mainlink a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        #mainlink:hover {
+            background-color: darkgreen;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+        }
+
+        #name {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        #basic_btn {
+            margin-top: 15px;
+        }
+
+        .gen {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        #generate {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .sizespeed {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .array_range, .array_speed {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #maximize-btn {
+            padding: 8px 15px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #sort-order-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        #ascending-btn, #descending-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #ascending-btn {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        #descending-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        #control-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        #pause-btn, #reset-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #pause-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        #reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        #counters {
+            display: flex;
+            justify-content: space-around;
+            margin: 10px 0;
+        }
+
+        .counter-box {
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 5px;
+        }
+
+        .counter-box span:first-child {
+            font-weight: bold;
+        }
+
+        #main-content {
+            display: flex;
+            flex: 1;
+            padding: 0 20px;
+        }
+
+        #info-panel {
+            width: 30%;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #algorithm-selection {
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #algorithm-selection h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .algorithm-selector {
+            margin-bottom: 15px;
+        }
+
+        .algorithm-selector label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .algorithm-selector select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        #visualization {
+            display: flex;
+            flex-direction: column;
+             width: 70%;
+            padding: 20px;
+            box-sizing: border-box;
+            gap: 20px;
+        }
+
+        .algorithm-container {
+            margin-bottom: 30px;
+        }
+
+        .algorithm-container h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .mainbody {
+            display: flex;
+            align-items: flex-end;
+            height: 300px;
+            position: relative;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 1px;
+            position: relative;
+            justify-content: flex-end;
+            flex: 1;
+        }
+
+        .bar {
+            width: 100%;
+            background: cyan;
+            transition: height 0.1s ease, background-color 0.1s ease;
+            position: relative;
+        }
+
+        .bar-number {
+            font-weight: bold;
+            color: black;
+            margin-bottom: 5px;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        .comparison-arrow {
+            color: red;
+            font-size: 20px;
+            font-weight: bold;
+            position: absolute;
+            bottom: 0;
+            z-index: 10;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .algorithm-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            #main-content {
+                flex-direction: column;
+            }
+            #info-panel, #visualization {
+                width: 100%;
+            }
+            #info-panel {
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <section id="fullbody">
+        <header>
+             <div id="mainlink">
+                <a href="../../index.html">Home</a>
+            </div>
+            <h1 id="name">SORTING ALGORITHM COMPARISON</h1>
+            <div id="basic_btn">
+                <div class="gen">
+                    <button id="generate">Generate New Array</button>
+                </div>
+                <div class="sizespeed">
+                    <div class="array_range">
+                        <span>Size: </span>
+                        <input type="range" id="size_slider" min="5" max="50" value="20">
+                        <span id="size_value">20</span>
+                    </div>
+                    <div class="array_speed">
+                        <span>Speed: </span>
+                        <input type="range" id="speed_slider" min="1" max="10" value="5">
+                        <span id="speed_value">5</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="sort-order-buttons">
+            <button id="ascending-btn">Ascending</button>
+            <button id="descending-btn">Descending</button>
+        </div>
+
+        <div id="control-buttons">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn">Pause</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+
+        <div id="main-content">
+            <div id="info-panel">
+                <div id="algorithm-selection">
+                    <h3>Algorithm Selection</h3>
+                    <div class="algorithm-selector">
+                        <label for="algorithm1">Algorithm 1:</label>
+                        <select id="algorithm1">
+                            <option value="bubble">Bubble Sort</option>
+                            <option value="insertion">Insertion Sort</option>
+                            <option value="selection">Selection Sort</option>
+                            <option value="merge">Merge Sort</option>
+                            <option value="quick">Quick Sort</option>
+                        </select>
+                    </div>
+                    <div class="algorithm-selector">
+                        <label for="algorithm2">Algorithm 2:</label>
+                        <select id="algorithm2">
+                            <option value="bubble">Bubble Sort</option>
+                            <option value="insertion">Insertion Sort</option>
+                            <option value="selection">Selection Sort</option>
+                            <option value="merge">Merge Sort</option>
+                            <option value="quick">Quick Sort</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="visualization">
+                <div class="algorithm-container">
+                    <h2 id="algorithm1-title">Algorithm 1</h2>
+                    <div class="mainbody" id="mainbody1"></div>
+                    <div class="algorithm-stats">
+                        <div class="stat-box">
+                            <span>Comparisons: </span>
+                            <span id="comparisons1">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span>Swaps: </span>
+                            <span id="swaps1">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span>Time: </span>
+                            <span id="time1">0</span>ms
+                        </div>
+                    </div>
+                </div>
+                <div class="algorithm-container">
+                    <h2 id="algorithm2-title">Algorithm 2</h2>
+                    <div class="mainbody" id="mainbody2"></div>
+                    <div class="algorithm-stats">
+                        <div class="stat-box">
+                            <span>Comparisons: </span>
+                            <span id="comparisons2">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span>Swaps: </span>
+                            <span id="swaps2">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span>Time: </span>
+                            <span id="time2">0</span>ms
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

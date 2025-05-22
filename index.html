@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sorting Visualizer</title>
+    <meta name="google-site-verification" content="U0HcC1QqpeETdDFvRvwuUEajTrZWKRoEBt6JR6H5vbo" />
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="sv-removebg-preview.png" type="image/x-icon">
+    <style>
+        /* Additional styles specific to this page */
+        .sorting-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 30px;
+            margin: 50px auto;
+            max-width: 1400px;
+            z-index: 3;
+            position: relative;
+            padding: 0 20px;
+        }
+        
+        .algorithm {
+            border: 2px solid var(--green);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            min-height: 380px;
+            position: relative;
+        }
+        
+        .bars-container {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            margin: 20px 0;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .bar {
+            flex: 1;
+            max-width: 25px;
+            background-color: cyan;
+            margin: 0 2px;
+            transition: height 0.2s, background-color 0.2s;
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background-color: var(--green);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "Poppins", sans-serif;
+            font-size: 1em;
+        }
+        
+        button:hover {
+            background-color: #006600;
+        }
+        
+        .data-options {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            z-index: 4;
+        }
+        
+        .data-options button {
+            background-color: #666;
+            padding: 10px 15px;
+            font-size: 1.1em;
+        }
+
+        .data-options button:hover {
+            background-color: #555;
+        }   
+        
+        .algorithm-title {
+            text-align: center;
+            margin: 20px 0 10px;
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 3;
+            position: relative;
+        }
+        
+        .info-button {
+            background-color: transparent;
+            color: var(--green);
+            border: 1px solid var(--green);
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            padding: 0;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        
+        .algorithm-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .algorithm h3 {
+            color: var(--green);
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        
+        #info-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--white);
+            padding: 20px;
+            border: 1px solid var(--green);
+            border-radius: 5px;
+            z-index: 1000;
+            max-width: 500px;
+            color: var(--black);
+        }
+        
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        #close-modal {
+            background-color: var(--green);
+            color: var(--white);
+        }
+    </style>
+</head>
+
+<body> 
+    <header>
+        <a href="#" class="logo">Sorting Visualizer</a>
+        <div class="rightSide">
+            <div class="btns menuToggle">
+                <ion-icon name="menu-outline"></ion-icon>
+                <ion-icon name="close-outline"></ion-icon>
+            </div>
+        </div>
+    </header>
+    <section class="main">
+        <div class="sorting-grid">
+            <div class="algorithm">
+                <div class="algorithm-header">
+                    <h3>Insertion Sort</h3>
+                    <button class="info-button" data-algo="insertion">i</button>
+                </div>
+                <div class="bars-container" id="insertion-bars"></div>
+                <div class="controls">
+                    <button class="play" data-algo="insertion">Play</button>
+                </div>
+            </div>
+            
+            <div class="algorithm">
+                <div class="algorithm-header">
+                    <h3>Selection Sort</h3>
+                    <button class="info-button" data-algo="selection">i</button>
+                </div>
+                <div class="bars-container" id="selection-bars"></div>
+                <div class="controls">
+                    <button class="play" data-algo="selection">Play</button>
+                </div>
+            </div>
+            
+            <div class="algorithm">
+                <div class="algorithm-header">
+                    <h3>Bubble Sort</h3>
+                    <button class="info-button" data-algo="bubble">i</button>
+                </div>
+                <div class="bars-container" id="bubble-bars"></div>
+                <div class="controls">
+                    <button class="play" data-algo="bubble">Play</button>
+                </div>
+            </div>
+            
+            <div class="algorithm">
+                <div class="algorithm-header">
+                    <h3>Merge Sort</h3>
+                    <button class="info-button" data-algo="merge">i</button>
+                </div>
+                <div class="bars-container" id="merge-bars"></div>
+                <div class="controls">
+                    <button class="play" data-algo="merge">Play</button>
+                </div>
+            </div>
+            
+            <div class="algorithm">
+                <div class="algorithm-header">
+                    <h3>Quick Sort</h3>
+                    <button class="info-button" data-algo="quick">i</button>
+                </div>
+                <div class="bars-container" id="quick-bars"></div>
+                <div class="controls">
+                    <button class="play" data-algo="quick">Play</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-options">
+            <button id="random">Random</button>
+            <button id="nearly-sorted">Nearly Sorted</button>
+            <button id="reversed">Reversed</button>
+            <button id="few-unique">Few Unique</button>
+            <button id="play-all">Play All</button>
+        </div>
+
+    <!-- Sidebar Navigation -->
+    <ul class="navigation">
+        <li class="home"><a href="index.html"><b>Home</b></a></li>
+        <li class="algo"><a href="Sorting\sorting.html"><b>Sorting Visualizer</b></a></li>
+        <li class="compare"><a href="Sorting\compare\index.html"><b>Algorithm Comparison</b></a></li>
+        <li class="queues"><a href="Sorting\queue.html"><b>Queues Visualization</b></a></li>
+        <li class="stacks"><a href="Sorting\stack.html"><b>Stack Visualization</b></a></li>
+    </ul>
+    
+    <!-- Info Modals -->
+    <div id="info-modal">
+        <h3 id="modal-title"></h3>
+        <p id="modal-content"></p>
+        <button id="close-modal">Close</button>
+    </div>
+    <div id="modal-overlay"></div>
+    
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="sorting.js"></script>
+    <script>
+        // Menu toggle functionality
+        document.querySelector('.menuToggle').onclick = function() {
+            this.classList.toggle('active');
+            document.querySelector('.navigation').classList.toggle('active');
+        };
+
+        // Info modal functionality
+        const infoButtons = document.querySelectorAll('.info-button');
+        const modal = document.getElementById('info-modal');
+        const overlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const closeModal = document.getElementById('close-modal');
+
+        const algorithmInfo = {
+            insertion: {
+                title: "Insertion Sort",
+                content: "Insertion sort builds the final sorted array one item at a time. It is much less efficient on large lists than more advanced algorithms. Time complexity: O(n²) in the worst case."
+            },
+            selection: {
+                title: "Selection Sort",
+                content: "Selection sort divides the input list into two parts: a sorted sublist and an unsorted sublist. It repeatedly finds the minimum element from the unsorted part and moves it to the sorted part. Time complexity: O(n²)."
+            },
+            bubble: {
+                title: "Bubble Sort",
+                content: "Bubble sort repeatedly steps through the list, compares adjacent elements and swaps them if they are in the wrong order. The pass through the list is repeated until the list is sorted. Time complexity: O(n²)."
+            },
+            merge: {
+                title: "Merge Sort",
+                content: "Merge sort is a divide-and-conquer algorithm that divides the input array into two halves, sorts them recursively, and then merges the two sorted halves. Time complexity: O(n log n)."
+            },
+            quick: {
+                title: "Quick Sort",
+                content: "Quick sort is a divide-and-conquer algorithm that selects a 'pivot' element and partitions the array around the pivot, placing smaller elements before it and larger elements after it. Time complexity: O(n log n) on average, O(n²) in worst case."
+            }
+        };
+
+        infoButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const algo = this.getAttribute('data-algo');
+                modalTitle.textContent = algorithmInfo[algo].title;
+                modalContent.textContent = algorithmInfo[algo].content;
+                modal.style.display = 'block';
+                overlay.style.display = 'block';
+            });
+        });
+
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        overlay.addEventListener('click', function() {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

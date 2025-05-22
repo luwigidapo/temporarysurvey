@@ -55,6 +55,10 @@ Space Complexity: O(1) - In-place sorting`;
             done.play();
             selectText.innerHTML = `Sorting Complete!`;
             stopTimer();
+            // Final coloring
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.style.background = 'rgb(0,255,0)';
+            });
         }
     } catch (e) {
         console.log("Sorting was interrupted");
@@ -77,10 +81,9 @@ async function SelectionSort() {
         }
         
         let targetIndex = i;
+        // Highlight the current target position
         barContainers[i].querySelector('.bar').style.background = 'rgb(250, 5, 54)';
-        
-        // Add target indicator
-        addComparisonIndicator(i, "Target", 'rgb(250, 5, 54)');
+        addComparisonIndicator(i, "Current Min", 'rgb(250, 5, 54)');
         
         for (let j = i + 1; j < barContainers.length; j++) {
             if (shouldReset) {
@@ -89,12 +92,9 @@ async function SelectionSort() {
                 return;
             }
             
+            // Highlight the element being compared
             barContainers[j].querySelector('.bar').style.background = 'rgb(245, 212, 24)';
-            
-            // Add current comparison indicator
             addComparisonIndicator(j, "Comparing", 'rgb(245, 212, 24)');
-            
-            await waitforme(delay);
             
             incrementComparison();
             
@@ -117,54 +117,73 @@ async function SelectionSort() {
                 );
             }
             
+            await waitforme(delay);
+            
             if (shouldUpdateTarget) {
+                // Reset previous target's color if it wasn't the original position
                 if (targetIndex !== i) {
                     barContainers[targetIndex].querySelector('.bar').style.background = 'cyan';
                     removeComparisonIndicator(targetIndex);
                 }
+                
                 targetIndex = j;
-                // Update target indicator
+                // Update the new target indicator
                 removeComparisonIndicator(j);
-                addComparisonIndicator(j, "New Target", 'rgb(250, 5, 54)');
+                addComparisonIndicator(j, "New Min", 'rgb(250, 5, 54)');
             } else {
                 barContainers[j].querySelector('.bar').style.background = 'cyan';
                 removeComparisonIndicator(j);
             }
+            
             updateComparisonDisplay('', '', '');
         }
         
         if (!shouldReset) {
+            // Perform the swap if needed
             if (targetIndex !== i) {
-                beep.play();
-                
                 // Add swap indicators
                 addComparisonIndicator(i, "Swapping ⇄", 'red');
                 addComparisonIndicator(targetIndex, "Swapping ⇄", 'red');
                 
                 await waitforme(delay);
+                
+                // Perform the swap (counts as one swap operation)
                 swapping(targetIndex, i);
+                beep.play();
+                incrementSwap();
+                
+                await waitforme(delay);
                 
                 // Remove swap indicators
                 removeComparisonIndicator(i);
                 removeComparisonIndicator(targetIndex);
-                
-                incrementSwap();
             }
-            barContainers[targetIndex].querySelector('.bar').style.background = 'cyan';
+            
+            // Mark the sorted element
             barContainers[i].querySelector('.bar').style.background = 'rgb(0,255,0)';
             removeComparisonIndicator(i);
+            
+            // Reset the target element's color if it wasn't swapped
+            if (targetIndex !== i) {
+                barContainers[targetIndex].querySelector('.bar').style.background = 'cyan';
+            }
         }
     }
     
     if (!shouldReset) {
+        // Mark the last element as sorted
         barContainers[barContainers.length - 1].querySelector('.bar').style.background = 'rgb(0,255,0)';
     }
 }
 
-
 // Helper functions for comparison indicators
 function addComparisonIndicator(index, text, color) {
+    // First remove any existing indicator at this position
+    removeComparisonIndicator(index);
+    
     const barContainer = document.querySelectorAll('.bar-container')[index];
+    if (!barContainer) return null;
+    
     const indicator = document.createElement('div');
     indicator.className = 'comparison-indicator';
     indicator.textContent = text;
@@ -194,10 +213,14 @@ function addComparisonIndicator(index, text, color) {
     
     indicator.appendChild(arrow);
     barContainer.appendChild(indicator);
+    
+    return indicator;
 }
 
 function removeComparisonIndicator(index) {
     const barContainer = document.querySelectorAll('.bar-container')[index];
+    if (!barContainer) return;
+    
     const indicator = barContainer.querySelector('.comparison-indicator');
     if (indicator) {
         barContainer.removeChild(indicator);

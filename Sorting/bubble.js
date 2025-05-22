@@ -126,9 +126,10 @@ async function BubbleSort() {
                 addComparisonIndicator(j, "Swapping ⇄", 'orange');
                 addComparisonIndicator(j + 1, "Swapping ⇄", 'orange');
                 
-                swapping(j, j + 1);
+                // Perform the swap (this counts as one swap operation)
+                await swapping(j, j + 1);  // Added await here to ensure swap completes
                 beep.play();
-                incrementSwap();
+                // Removed the separate incrementSwap() call since swapping() should handle it
                 
                 await waitforme(delay);
                 if (shouldReset) {

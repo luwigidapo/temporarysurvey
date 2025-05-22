@@ -86,6 +86,7 @@ Space Complexity: O(n) - Requires auxiliary space`;
     try {
         const barContainers = document.querySelectorAll('.bar-container');
         removeComparisonIndicators(); // Clear any existing indicators
+        shouldReset = false; // Reset the flag before starting
         await MergeSort(barContainers, 0, barContainers.length - 1);
         if (!shouldReset) {
             done.play();
@@ -106,12 +107,6 @@ Space Complexity: O(n) - Requires auxiliary space`;
 });
 
 async function MergeSort(barContainers, l, r) {
-    if (shouldReset) {
-        resetBarColors();
-        removeComparisonIndicators();
-        return;
-    }
-
     if (l >= r) {
         return;
     }
@@ -119,12 +114,30 @@ async function MergeSort(barContainers, l, r) {
     const m = l + Math.floor((r - l) / 2);
     
     // Add partition indicators
-    addComparisonIndicator(l, `Left ${l}-${m}`, '#ff9999');
-    addComparisonIndicator(m, `Mid`, '#66ccff');
-    addComparisonIndicator(r, `Right ${m+1}-${r}`, '#ffff99');
+    addComparisonIndicator(l, `Left ${l}-${m}`, '#A020F0');
+    addComparisonIndicator(m, `Mid`, '#A020F0');
+    addComparisonIndicator(r, `Right ${m+1}-${r}`, '#A020F0');
+    
+    await waitforme(delay);
+    if (shouldReset) {
+        resetBarColors();
+        removeComparisonIndicators();
+        throw new Error("Sorting interrupted");
+    }
     
     await MergeSort(barContainers, l, m);
+    if (shouldReset) {
+        resetBarColors();
+        removeComparisonIndicators();
+        throw new Error("Sorting interrupted");
+    }
+    
     await MergeSort(barContainers, m + 1, r);
+    if (shouldReset) {
+        resetBarColors();
+        removeComparisonIndicators();
+        throw new Error("Sorting interrupted");
+    }
     
     // Remove partition indicators before merge
     removeComparisonIndicator(l);
@@ -135,12 +148,6 @@ async function MergeSort(barContainers, l, r) {
 }
 
 async function Merge(barContainers, l, m, r) {
-    if (shouldReset) {
-        resetBarColors();
-        removeComparisonIndicators();
-        return;
-    }
-
     const n1 = m - l + 1;
     const n2 = r - m;
     
@@ -158,7 +165,7 @@ async function Merge(barContainers, l, m, r) {
     if (shouldReset) {
         resetBarColors();
         removeComparisonIndicators();
-        return;
+        throw new Error("Sorting interrupted");
     }
     
     // Create temp arrays
@@ -182,7 +189,7 @@ async function Merge(barContainers, l, m, r) {
         if (shouldReset) {
             resetBarColors();
             removeComparisonIndicators();
-            return;
+            throw new Error("Sorting interrupted");
         }
         
         // Highlight current elements being compared
@@ -238,7 +245,7 @@ async function Merge(barContainers, l, m, r) {
         if (shouldReset) {
             resetBarColors();
             removeComparisonIndicators();
-            return;
+            throw new Error("Sorting interrupted");
         }
         
         barContainers[k].querySelector('.bar').style.height = leftHeights[i];
@@ -256,7 +263,7 @@ async function Merge(barContainers, l, m, r) {
         if (shouldReset) {
             resetBarColors();
             removeComparisonIndicators();
-            return;
+            throw new Error("Sorting interrupted");
         }
         
         barContainers[k].querySelector('.bar').style.height = rightHeights[j];

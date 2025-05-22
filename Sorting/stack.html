@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="prism.css">
-    <title>Stack Visualizer</title>
+    <title>Stack Visualizer (Array Implementation)</title>
     <style>
         body {
             margin: 0;
@@ -140,6 +139,18 @@
             border-radius: 4px;
         }
 
+        #speed-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        #speed-slider {
+            width: 200px;
+        }
+
         #main-content {
             display: flex;
             flex: 1;
@@ -157,30 +168,12 @@
             transition: all 0.3s ease;
         }
 
-        #definition-panel {
+        #definition-panel, #code-panel, #complexity-panel {
             background-color: white;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 1;
-        }
-
-        #code-panel {
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 2;
-        }
-
-        #complexity-panel {
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 1;
         }
 
         #visualization {
@@ -192,49 +185,119 @@
             transition: all 0.3s ease;
         }
 
-        #mainbody {
+        #stack-container {
             flex: 1;
-            display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            justify-content: flex-end;
             min-height: 400px;
             position: relative;
-            border-bottom: 3px solid #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .stack-element {
-            width: 100px;
-            height: 60px;
-            background: #3498db;
-            margin: 5px 0;
+        #array-container {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .array-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .array-boxes {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 1px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .array-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #2c3e50;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
-            border-radius: 5px;
-            transition: all 0.3s ease;
+            font-size: 14px;
+            background-color: #ecf0f1;
+            position: relative;
+            transition: all 0.5s ease;
+        }
+
+        .array-box.filled {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .array-box.top-position {
+            border-color: #e74c3c;
+            border-width: 3px;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .array-index {
+            width: 25px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+        }
+
+        .pointer-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .pointer-box {
+            width: 80px;
+            height: 50px;
+            border: 2px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            background-color: #f8f9fa;
             position: relative;
         }
 
-        .stack-element::after {
-            content: '';
+        .pointer-box.top {
+            border-color: #e74c3c;
+            background-color: #fdeaea;
+        }
+
+        .pointer-label {
             position: absolute;
-            top: -5px;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: #2980b9;
-            border-radius: 5px 5px 0 0;
+            top: -25px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        .stack-element.top-element {
-            background: #2ecc71;
+        .pointer-box.top .pointer-label {
+            color: #e74c3c;
         }
 
-        .stack-element.top-element::after {
-            background: #27ae60;
+        #status {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #2c3e50;
+            font-size: 18px;
         }
 
         .panel-title {
@@ -250,9 +313,6 @@
             background-color: #f5f5f5;
             padding: 10px;
             border-radius: 4px;
-        }
-
-        .language-java {
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             line-height: 1.5;
@@ -266,6 +326,55 @@
             width: 100%;
         }
 
+        .animate-push {
+            animation: pushAnimation 0.5s ease-in-out;
+        }
+
+        .animate-pop {
+            animation: popAnimation 0.5s ease-in-out;
+        }
+
+        @keyframes pushAnimation {
+            0% {
+                transform: scale(1.2) translateY(-20px);
+                background-color: #2ecc71;
+            }
+            50% {
+                transform: scale(1.4) translateY(-10px);
+                background-color: #27ae60;
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                background-color: #3498db;
+            }
+        }
+
+        @keyframes popAnimation {
+            0% {
+                transform: scale(1);
+                background-color: #3498db;
+            }
+            50% {
+                transform: scale(1.2) translateY(-10px);
+                background-color: #e74c3c;
+            }
+            100% {
+                transform: scale(1) translateY(-20px);
+                background-color: #ecf0f1;
+                opacity: 0.5;
+            }
+        }
+
+        .stack-arrow {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
         @media (max-width: 768px) {
             #main-content {
                 flex-direction: column;
@@ -277,19 +386,31 @@
                 border-right: none;
                 border-bottom: 1px solid #ddd;
             }
+            
+            .array-box {
+                width: 45px;
+                height: 45px;
+                font-size: 14px;
+            }
+            
+            .array-index {
+                width: 45px;
+                height: 45px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <section id="fullbody">
         <header>
-             <div id="mainlink">
+            <div id="mainlink">
                 <a href="../../index.html">Home</a>
             </div>
             <h1 id="name"><span class="big">S</span>TACK <span class="big">VISUALIZER</span> (Array Implementation)</h1>
             <div id="basic_btn">
                 <div class="gen">
-                    <button id="back-btn">Back to Sorting</button>
+                    <button id="back-btn">Back to Data Structures</button>
                 </div>
                 <div class="sizespeed">
                     <div class="array_range">
@@ -302,81 +423,476 @@
         </header>
 
         <div id="input-container">
-            <input type="text" id="stack-input" placeholder="Enter value to push">
+            <input type="text" id="stack-input" placeholder="Enter value(s) to push (e.g., 34,56,78)">
             <button id="push-btn">Push</button>
             <button id="pop-btn">Pop</button>
             <button id="clear-btn">Clear Stack</button>
         </div>
 
+        <div id="speed-control">
+            <span>Animation Speed:</span>
+            <input type="range" id="speed-slider" min="1" max="10" value="5">
+        </div>
+
         <div id="main-content">
             <div id="info-panel">
                 <div id="definition-panel">
-                    <h3 class="panel-title">Stack Definition</h3>
+                    <h3 class="panel-title">Stack Definition (Array Implementation)</h3>
                     <div id="algorithm-definition">
-                        <p><strong>Stack</strong> is a linear data structure which follows a particular order in which the operations are performed. The order may be LIFO(Last In First Out) or FILO(First In Last Out).</p>
+                        <p><strong>Stack</strong> is a linear data structure that follows the Last-In-First-Out (LIFO) principle. In array implementation, we use a top pointer to track the topmost element.</p>
                         <p><strong>Main Operations:</strong></p>
                         <ol>
-                            <li><strong>Push:</strong> Adds an item to the stack</li>
-                            <li><strong>Pop:</strong> Removes an item from the stack</li>
+                            <li><strong>Push:</strong> Adds an item to the top of the stack</li>
+                            <li><strong>Pop:</strong> Removes and returns the top item from the stack</li>
+                            <li><strong>Peek/Top:</strong> Returns the top item without removing it</li>
                         </ol>
-                        <p>Stack has many applications including function calls, expression evaluation, undo operations, etc.</p>
+                        <p>Array implementation provides O(1) operations but has fixed size limitation.</p>
                     </div>
                 </div>
                 <div id="code-panel">
-                    <h3 class="panel-title">Code in (Java)</h3>
-                    <pre id="code_java"><code class="language-java">class Stack {
-    private int maxSize;
-    private int[] stackArray;
+                    <h3 class="panel-title">Code in Java</h3>
+                    <pre id="code_java"><code>class ArrayStack {
+    private int[] stack;
     private int top;
+    private int capacity;
     
-    public Stack(int size) {
-        maxSize = size;
-        stackArray = new int[maxSize];
-        top = -1;
+    public ArrayStack(int capacity) {
+        this.capacity = capacity;
+        this.stack = new int[capacity];
+        this.top = -1; // Stack is initially empty
     }
     
-    public void push(int value) {
-        if (isFull()) {
-            System.out.println("Stack is full");
-            return;
+    public void push(int data) {
+        if (top == capacity - 1) {
+            throw new RuntimeException("Stack overflow");
         }
-        stackArray[++top] = value;
+        stack[++top] = data;
     }
     
     public int pop() {
-        if (isEmpty()) {
-            System.out.println("Stack is empty");
-            return -1;
+        if (top == -1) {
+            throw new RuntimeException("Stack underflow");
         }
-        return stackArray[top--];
+        int data = stack[top];
+        stack[top--] = 0; // Optional: clear the slot
+        return data;
+    }
+    
+    public int peek() {
+        if (top == -1) {
+            throw new RuntimeException("Stack is empty");
+        }
+        return stack[top];
     }
     
     public boolean isEmpty() {
-        return (top == -1);
+        return top == -1;
     }
     
     public boolean isFull() {
-        return (top == maxSize - 1);
+        return top == capacity - 1;
+    }
+    
+    public int size() {
+        return top + 1;
     }
 }</code></pre>
                 </div>
                 <div id="complexity-panel">
                     <h3 class="panel-title">Complexity Analysis</h3>
-                    <pre id="time"><code class="language-java">Time Complexity:
+                    <pre id="time"><code>Time Complexity:
 - Push: O(1)
 - Pop: O(1)
 - Peek: O(1)
+- isEmpty: O(1)
+- isFull: O(1)
 
-Space Complexity: O(n) - where n is capacity of stack</code></pre>
+Space Complexity: O(n) - where n is the capacity of array
+
+Advantages:
+- Fixed memory usage
+- Cache-friendly access pattern
+- Simple implementation
+- Direct index access
+
+Disadvantages:
+- Fixed size limitation
+- Memory waste when not full
+- Stack overflow risk</code></pre>
                 </div>
             </div>
             <div id="visualization">
-                <div id="mainbody"></div>
+                <div id="stack-container">
+                    <div id="array-container">
+                        <div class="array-boxes" id="array-boxes"></div>
+                    </div>
+                    <div class="pointer-container">
+                        <div class="pointer-box top">
+                            <div class="pointer-label">TOP</div>
+                            <span id="top-value">-1</span>
+                        </div>
+                    </div>
+                    <div id="status">Stack is empty</div>
+                </div>
             </div>
         </div>
     </section>
 
-    <script src="prism.js"></script>
-    <script src="stack.js"></script>
+    <script>
+        const stackVisual = document.querySelector("#array-container");
+        const arrayBoxes = document.querySelector("#array-boxes");
+        const sizeValue = document.querySelector("#size_value");
+        const stackInput = document.querySelector("#stack-input");
+        const pushBtn = document.querySelector("#push-btn");
+        const popBtn = document.querySelector("#pop-btn");
+        const clearBtn = document.querySelector("#clear-btn");
+        const backBtn = document.querySelector("#back-btn");
+        const maximizeBtn = document.querySelector("#maximize-btn");
+        const statusDisplay = document.querySelector("#status");
+        const speedSlider = document.querySelector("#speed-slider");
+        const topValue = document.querySelector("#top-value");
+
+        class ArrayStack {
+            constructor(capacity = 25) {
+                this.capacity = capacity;
+                this.stack = new Array(capacity).fill(null);
+                this.top = -1; // Stack starts empty, top = -1
+            }
+
+            push(value) {
+                if (this.isFull()) {
+                    throw new Error("Stack overflow");
+                }
+                this.top++;
+                this.stack[this.top] = value;
+            }
+
+            pop() {
+                if (this.isEmpty()) {
+                    throw new Error("Stack underflow");
+                }
+                const value = this.stack[this.top];
+                this.stack[this.top] = null;
+                this.top--;
+                return value;
+            }
+
+            peek() {
+                if (this.isEmpty()) {
+                    throw new Error("Stack is empty");
+                }
+                return this.stack[this.top];
+            }
+
+            clear() {
+                this.stack.fill(null);
+                this.top = -1;
+            }
+
+            isEmpty() {
+                return this.top === -1;
+            }
+
+            isFull() {
+                return this.top === this.capacity - 1;
+            }
+
+            size() {
+                return this.top + 1;
+            }
+        }
+
+        const stack = new ArrayStack(25);
+        let animationSpeed = 500; // Default speed
+        let isAnimating = false;
+
+        function initializeVisualization() {
+            // Create array boxes (0-24) vertically with numbers beside each box
+            // Display from bottom to top (index 0 at bottom, index 24 at top)
+            arrayBoxes.innerHTML = '';
+            
+            for (let i = 24; i >= 0; i--) { // Reverse order for visual stack effect
+                // Create row container
+                const row = document.createElement('div');
+                row.className = 'array-row';
+                
+                // Create index number
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.textContent = i;
+                
+                // Create box
+                const box = document.createElement('div');
+                box.className = 'array-box';
+                box.id = `box-${i}`;
+                
+                // Add index and box to row
+                row.appendChild(index);
+                row.appendChild(box);
+                
+                // Add row to container
+                arrayBoxes.appendChild(row);
+            }
+            
+            updateVisualization();
+        }
+
+        function updateVisualization() {
+            // Update size display
+            sizeValue.textContent = stack.size();
+            
+            // Update top display
+            topValue.textContent = stack.top;
+            
+            // Update array boxes
+            for (let i = 0; i < 25; i++) {
+                const box = document.getElementById(`box-${i}`);
+                box.className = 'array-box';
+                box.textContent = '';
+                
+                if (stack.stack[i] !== null) {
+                    box.classList.add('filled');
+                    box.textContent = stack.stack[i];
+                }
+                
+                // Highlight top position
+                if (i === stack.top && !stack.isEmpty()) {
+                    box.classList.add('top-position');
+                }
+            }
+            
+            // Update status
+            if (stack.isEmpty()) {
+                statusDisplay.textContent = "Stack is empty - Next element will be pushed at index 0";
+            } else if (stack.isFull()) {
+                statusDisplay.textContent = "Stack is full - Cannot push more elements";
+            } else {
+                statusDisplay.textContent = `Stack has ${stack.size()} element(s) - Top element: ${stack.peek()} at index ${stack.top}`;
+            }
+        }
+
+        async function animatePush(value) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            try {
+                if (stack.isFull()) {
+                    alert("Stack overflow! Cannot push more elements.");
+                    return;
+                }
+                
+                statusDisplay.textContent = `Pushing ${value}...`;
+                
+                // Perform push operation
+                stack.push(value);
+                
+                // Get the box that was just filled
+                const topPosition = stack.top;
+                const box = document.getElementById(`box-${topPosition}`);
+                
+                // Add push animation
+                box.classList.add('animate-push');
+                
+                // Wait for animation
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+                
+                // Remove animation class
+                box.classList.remove('animate-push');
+                
+                // Update visualization
+                updateVisualization();
+                
+                statusDisplay.textContent = `Pushed ${value} at index ${topPosition}`;
+                
+            } catch (error) {
+                statusDisplay.textContent = error.message;
+            } finally {
+                isAnimating = false;
+            }
+        }
+
+        async function animatePushMultiple(values) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            try {
+                for (let i = 0; i < values.length; i++) {
+                    const value = values[i];
+                    
+                    if (stack.isFull()) {
+                        alert(`Stack overflow! Cannot push ${value}. Stopped at element ${i + 1}.`);
+                        break;
+                    }
+                    
+                    statusDisplay.textContent = `Pushing ${value}... (${i + 1} of ${values.length})`;
+                    
+                    // Perform push operation
+                    stack.push(value);
+                    
+                    // Get the box that was just filled
+                    const topPosition = stack.top;
+                    const box = document.getElementById(`box-${topPosition}`);
+                    
+                    // Add push animation
+                    box.classList.add('animate-push');
+                    
+                    // Wait for animation
+                    await new Promise(resolve => setTimeout(resolve, animationSpeed));
+                    
+                    // Remove animation class
+                    box.classList.remove('animate-push');
+                    
+                    // Update visualization
+                    updateVisualization();
+                    
+                    // Small delay between pushes for better visualization
+                    if (i < values.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, animationSpeed * 0.3));
+                    }
+                }
+                
+                if (values.length === 1) {
+                    statusDisplay.textContent = `Pushed ${values[0]} at index ${stack.top}`;
+                } else {
+                    statusDisplay.textContent = `Pushed ${values.length} values: ${values.join(', ')}`;
+                }
+                
+            } catch (error) {
+                statusDisplay.textContent = error.message;
+            } finally {
+                isAnimating = false;
+            }
+        }
+
+        async function animatePop() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            try {
+                if (stack.isEmpty()) {
+                    alert("Stack underflow! Cannot pop from empty stack.");
+                    return;
+                }
+                
+                statusDisplay.textContent = "Popping...";
+                
+                const currentTop = stack.top;
+                const box = document.getElementById(`box-${currentTop}`);
+                const value = stack.peek();
+                
+                // Add pop animation
+                box.classList.add('animate-pop');
+                
+                // Wait for animation
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+                
+                // Perform pop operation
+                stack.pop();
+                
+                // Remove animation class
+                box.classList.remove('animate-pop');
+                
+                // Update visualization
+                updateVisualization();
+                
+                statusDisplay.textContent = `Popped ${value} from index ${currentTop}`;
+                
+            } catch (error) {
+                statusDisplay.textContent = error.message;
+            } finally {
+                isAnimating = false;
+            }
+        }
+
+        function clearStack() {
+            if (stack.isEmpty()) {
+                alert("Stack is already empty");
+                return;
+            }
+            
+            if (confirm("Are you sure you want to clear the stack?")) {
+                stack.clear();
+                updateVisualization();
+                statusDisplay.textContent = "Stack cleared";
+            }
+        }
+
+        // Event listeners
+        pushBtn.addEventListener('click', function() {
+            const input = stackInput.value.trim();
+            if (input === "") {
+                alert("Please enter value(s) to push");
+                return;
+            }
+            
+            // Parse multiple values separated by commas
+            let values = input.split(',').map(v => v.trim());
+            let validValues = [];
+            
+            for (let value of values) {
+                if (value === "") continue;
+                if (isNaN(value)) {
+                    alert(`"${value}" is not a valid number. Please enter valid numbers separated by commas.`);
+                    return;
+                }
+                validValues.push(parseInt(value));
+            }
+            
+            if (validValues.length === 0) {
+                alert("Please enter at least one valid number");
+                return;
+            }
+            
+            animatePushMultiple(validValues);
+            stackInput.value = "";
+        });
+
+        popBtn.addEventListener('click', animatePop);
+        clearBtn.addEventListener('click', clearStack);
+
+        // Allow pressing Enter to push
+        stackInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const input = stackInput.value.trim();
+                if (input !== "") {
+                    // Parse multiple values separated by commas
+                    let values = input.split(',').map(v => v.trim());
+                    let validValues = [];
+                    
+                    for (let value of values) {
+                        if (value === "") continue;
+                        if (!isNaN(value)) {
+                            validValues.push(parseInt(value));
+                        }
+                    }
+                    
+                    if (validValues.length > 0) {
+                        animatePushMultiple(validValues);
+                        stackInput.value = "";
+                    }
+                }
+            }
+        });
+
+        // Animation speed control
+        speedSlider.addEventListener('input', function() {
+            animationSpeed = 1000 - (this.value * 90);
+        });
+
+        // Back button
+        backBtn.addEventListener('click', function() {
+            window.location.href = 'data-structures.html';
+        });
+
+        // Maximize button
+        maximizeBtn.addEventListener('click', function() {
+            document.getElementById('fullbody').classList.toggle('maximized');
+            this.textContent = document.getElementById('fullbody').classList.contains('maximized') ? 
+                'Minimize' : 'Maximize';
+        });
+
+        // Initialize the visualization
+        initializeVisualization();
+    </script>
 </body>
 </html>

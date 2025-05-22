@@ -5,8 +5,8 @@ var done = new Audio('wrong.mp3');
 const HeapSortButton = document.querySelector(".HeapSort");
 HeapSortButton.addEventListener('click', async function () {
     mouseclick.play();
-    selectText.innerHTML = `Heap Sort (${sortOrder})..`;
-    
+    selectText.innerHTML = `Heap Sort (${sortOrder})..`; 
+
     // Update info panels
     document.getElementById('algorithm-definition').innerHTML = `
         <p><strong>Heap Sort</strong> is a comparison-based sorting algorithm that uses a binary heap data structure.</p>
@@ -19,9 +19,8 @@ HeapSortButton.addEventListener('click', async function () {
         </ol>
         <p>This algorithm has an optimal O(n log n) time complexity.</p>
     `;
-    
-    document.getElementById('code_java').innerHTML = 
-`void heapSort(int arr[]) {
+
+    document.getElementById('code_java').innerHTML = `void heapSort(int arr[]) {
     int n = arr.length;
 
     // Build heap (rearrange array)
@@ -64,8 +63,7 @@ void heapify(int arr[], int n, int i) {
     }
 }`;
 
-    document.getElementById('time').innerHTML = 
-`Time Complexity:
+    document.getElementById('time').innerHTML = `Time Complexity:
 - Worst Case: O(n log n) - All cases
 - Average Case: O(n log n) - All cases
 - Best Case: O(n log n) - All cases
@@ -77,9 +75,9 @@ Space Complexity: O(1) - In-place sorting`;
     disableNewArrayBtn();
     resetCounters();
     startTimer();
-    
+
     try {
-        await HeapSort();
+        await (sortOrder === 'ascending' ? HeapSort : heapSortDesc)();
         if (!shouldReset) {
             done.play();
             selectText.innerHTML = `Sorting Complete!`;
@@ -88,7 +86,7 @@ Space Complexity: O(1) - In-place sorting`;
     } catch (e) {
         console.log("Sorting was interrupted");
     }
-    
+
     enableSortingBtn();
     enableSizeSlider();
     enableNewArrayBtn();
@@ -99,19 +97,8 @@ async function HeapSort() {
     const barContainers = document.querySelectorAll('.bar-container');
     const n = barContainers.length;
 
-    // Color definitions
-    const originalColor = 'cyan';
-    const heapifyColor = 'rgb(250, 5, 54)';
-    const leftChildColor = 'rgb(245, 212, 24)';
-    const rightChildColor = 'rgb(100, 200, 100)';
-    const swapColor = 'orange';
-    const sortedColor = 'rgb(0,255,0)';
-
-    async function swap(index1, index2) {
-        // Add swap indicators
-        addComparisonIndicator(index1, "Swapping ⇄", swapColor);
-        addComparisonIndicator(index2, "Swapping ⇄", swapColor);
-        
+    // Helper function to swap elements (without counting for heapify operations)
+    async function swapElements(index1, index2, countSwap = false) {
         const tempHeight = barContainers[index1].querySelector('.bar').style.height;
         const tempText = barContainers[index1].querySelector('.bar-number').textContent;
 
@@ -121,109 +108,42 @@ async function HeapSort() {
         barContainers[index2].querySelector('.bar').style.height = tempHeight;
         barContainers[index2].querySelector('.bar-number').textContent = tempText;
 
-        barContainers[index1].querySelector('.bar').style.background = swapColor;
-        barContainers[index2].querySelector('.bar').style.background = swapColor;
-
-        incrementSwap();
+        // Only count as swap if specified (for main extraction swaps)
+        if (countSwap) {
+            incrementSwap();
+        }
+        
+        beep.play();
         await waitforme(delay);
-
-        // Remove swap indicators
-        removeComparisonIndicator(index1);
-        removeComparisonIndicator(index2);
-
-        barContainers[index1].querySelector('.bar').style.background = originalColor;
-        barContainers[index2].querySelector('.bar').style.background = originalColor;
     }
 
     async function heapify(n, i) {
-        if (shouldReset) {
-            resetBarColors();
-            removeComparisonIndicators();
-            return;
-        }
-
         let largest = i;
         const l = 2 * i + 1;
         const r = 2 * i + 2;
 
-        // Highlight current node being heapified
-        barContainers[largest].querySelector('.bar').style.background = heapifyColor;
-        addComparisonIndicator(largest, "Heapify", heapifyColor);
-
         if (l < n) {
-            // Highlight left child
-            barContainers[l].querySelector('.bar').style.background = leftChildColor;
-            addComparisonIndicator(l, "Left Child", leftChildColor);
-            
-            await waitforme(delay);
             incrementComparison();
-
-            // Compare and update largest
-            if (sortOrder === 'ascending' && parseInt(barContainers[l].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
+            if (parseInt(barContainers[l].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = l;
-                updateComparisonDisplay(
-                    parseInt(barContainers[l].querySelector('.bar-number').textContent),
-                    parseInt(barContainers[i].querySelector('.bar-number').textContent),
-                    '>'
-                );
-            } else if (sortOrder === 'descending' && parseInt(barContainers[l].querySelector('.bar-number').textContent) < parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
-                largest = l;
-                updateComparisonDisplay(
-                    parseInt(barContainers[l].querySelector('.bar-number').textContent),
-                    parseInt(barContainers[i].querySelector('.bar-number').textContent),
-                    '<'
-                );
             }
         }
 
         if (r < n) {
-            // Highlight right child
-            barContainers[r].querySelector('.bar').style.background = rightChildColor;
-            addComparisonIndicator(r, "Right Child", rightChildColor);
-            
-            await waitforme(delay);
             incrementComparison();
-
-            // Compare and update largest
-            if (sortOrder === 'ascending' && parseInt(barContainers[r].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
+            if (parseInt(barContainers[r].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = r;
-                updateComparisonDisplay(
-                    parseInt(barContainers[r].querySelector('.bar-number').textContent),
-                    parseInt(barContainers[largest].querySelector('.bar-number').textContent),
-                    '>'
-                );
-            } else if (sortOrder === 'descending' && parseInt(barContainers[r].querySelector('.bar-number').textContent) < parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
-                largest = r;
-                updateComparisonDisplay(
-                    parseInt(barContainers[r].querySelector('.bar-number').textContent),
-                    parseInt(barContainers[largest].querySelector('.bar-number').textContent),
-                    '<'
-                );
             }
         }
 
-        // Reset colors and indicators
-        if (l < n) {
-            barContainers[l].querySelector('.bar').style.background = originalColor;
-            removeComparisonIndicator(l);
-        }
-        if (r < n) {
-            barContainers[r].querySelector('.bar').style.background = originalColor;
-            removeComparisonIndicator(r);
-        }
-        barContainers[i].querySelector('.bar').style.background = originalColor;
-        removeComparisonIndicator(i);
-
-        updateComparisonDisplay('', '', '');
-
-        // If heap condition is violated, swap and recurse
         if (largest !== i) {
-            await swap(i, largest);
+            // Heapify swaps are not counted as main swaps
+            await swapElements(i, largest, false);
             await heapify(n, largest);
         }
     }
 
-    // Build max heap (rearrange array)
+    // Build max heap (rearrange array) - these swaps are not counted
     for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
         if (shouldReset) {
             resetBarColors();
@@ -233,97 +153,101 @@ async function HeapSort() {
         await heapify(n, i);
     }
 
-    // Extract elements from the heap one by one
+    // Extract elements from the heap one by one - these swaps ARE counted
     for (let i = n - 1; i > 0; i--) {
         if (shouldReset) {
             resetBarColors();
             removeComparisonIndicators();
             return;
         }
-        
-        // Highlight the root and current last element
-        addComparisonIndicator(0, "Root", heapifyColor);
-        addComparisonIndicator(i, "Moving to sorted", sortedColor);
-        
-        await swap(0, i);
-        barContainers[i].querySelector('.bar').style.background = sortedColor;
-        
-        // Remove indicators
-        removeComparisonIndicator(0);
-        removeComparisonIndicator(i);
-        
+        // This is the main swap that moves the largest element to its final position
+        await swapElements(0, i, true); // Count this swap
         await heapify(i, 0);
     }
 
     if (!shouldReset) {
-        barContainers[0].querySelector('.bar').style.background = sortedColor;
-        // Final coloring
         barContainers.forEach(container => {
-            container.querySelector('.bar').style.background = sortedColor;
+            container.querySelector('.bar').style.background = 'rgb(0,255,0)';
         });
     }
 }
 
-// Helper functions for comparison indicators
-function addComparisonIndicator(index, text, color) {
-    // First remove any existing indicator at this position
-    removeComparisonIndicator(index);
-    
-    const barContainer = document.querySelectorAll('.bar-container')[index];
-    if (!barContainer) return null;
-    
-    const indicator = document.createElement('div');
-    indicator.className = 'comparison-indicator';
-    indicator.textContent = text;
-    indicator.style.position = 'absolute';
-    indicator.style.top = '-25px';
-    indicator.style.left = '50%';
-    indicator.style.transform = 'translateX(-50%)';
-    indicator.style.backgroundColor = color || '#333';
-    indicator.style.color = 'white';
-    indicator.style.padding = '2px 5px';
-    indicator.style.borderRadius = '3px';
-    indicator.style.fontSize = '12px';
-    indicator.style.zIndex = '10';
-    indicator.style.whiteSpace = 'nowrap';
-    
-    // Add arrow
-    const arrow = document.createElement('div');
-    arrow.style.position = 'absolute';
-    arrow.style.bottom = '-8px';
-    arrow.style.left = '50%';
-    arrow.style.transform = 'translateX(-50%)';
-    arrow.style.width = '0';
-    arrow.style.height = '0';
-    arrow.style.borderLeft = '6px solid transparent';
-    arrow.style.borderRight = '6px solid transparent';
-    arrow.style.borderTop = `8px solid ${color || '#333'}`;
-    
-    indicator.appendChild(arrow);
-    barContainer.appendChild(indicator);
-    
-    return indicator;
-}
+async function heapSortDesc() {
+    shouldReset = false;
+    const barContainers = document.querySelectorAll('.bar-container');
+    const n = barContainers.length;
 
-function removeComparisonIndicator(index) {
-    const barContainer = document.querySelectorAll('.bar-container')[index];
-    if (!barContainer) return;
-    
-    const indicator = barContainer.querySelector('.comparison-indicator');
-    if (indicator) {
-        barContainer.removeChild(indicator);
+    // Helper function to swap elements (without counting for heapify operations)
+    async function swapElements(index1, index2, countSwap = false) {
+        const tempHeight = barContainers[index1].querySelector('.bar').style.height;
+        const tempText = barContainers[index1].querySelector('.bar-number').textContent;
+
+        barContainers[index1].querySelector('.bar').style.height = barContainers[index2].querySelector('.bar').style.height;
+        barContainers[index1].querySelector('.bar-number').textContent = barContainers[index2].querySelector('.bar-number').textContent;
+
+        barContainers[index2].querySelector('.bar').style.height = tempHeight;
+        barContainers[index2].querySelector('.bar-number').textContent = tempText;
+
+        // Only count as swap if specified (for main extraction swaps)
+        if (countSwap) {
+            incrementSwap();
+        }
+        
+        beep.play();
+        await waitforme(delay);
     }
-}
 
-function removeComparisonIndicators() {
-    document.querySelectorAll('.comparison-indicator').forEach(indicator => {
-        indicator.parentNode?.removeChild(indicator);
-    });
-}
+    async function heapify(n, i) {
+        let smallest = i;
+        const l = 2 * i + 1;
+        const r = 2 * i + 2;
 
-function resetBarColors() {
-    const bars = document.querySelectorAll('.bar');
-    bars.forEach(el => {
-        el.style.background = '';
-    });
+        if (l < n) {
+            incrementComparison();
+            if (parseInt(barContainers[l].querySelector('.bar-number').textContent) < parseInt(barContainers[smallest].querySelector('.bar-number').textContent)) {
+                smallest = l;
+            }
+        }
+
+        if (r < n) {
+            incrementComparison();
+            if (parseInt(barContainers[r].querySelector('.bar-number').textContent) < parseInt(barContainers[smallest].querySelector('.bar-number').textContent)) {
+                smallest = r;
+            }
+        }
+
+        if (smallest !== i) {
+            // Heapify swaps are not counted as main swaps
+            await swapElements(i, smallest, false);
+            await heapify(n, smallest);
+        }
+    }
+
+    // Build min heap (rearrange array) - these swaps are not counted
+    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+        if (shouldReset) {
+            resetBarColors();
+            removeComparisonIndicators();
+            return;
+        }
+        await heapify(n, i);
+    }
+
+    // Extract elements from the heap one by one - these swaps ARE counted
+    for (let i = n - 1; i > 0; i--) {
+        if (shouldReset) {
+            resetBarColors();
+            removeComparisonIndicators();
+            return;
+        }
+        // This is the main swap that moves the smallest element to its final position
+        await swapElements(0, i, true); // Count this swap
+        await heapify(i, 0);
+    }
+
+    if (!shouldReset) {
+        barContainers.forEach(container => {
+            container.querySelector('.bar').style.background = 'rgb(0,255,0)';
+        });
+    }
 }

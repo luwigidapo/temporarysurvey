@@ -141,6 +141,7 @@ async function partition(barContainers, low, high) {
         
         await waitforme(delay);
         
+        // Only increment comparison counter here
         incrementComparison();
         
         let comparisonResult;
@@ -164,22 +165,28 @@ async function partition(barContainers, low, high) {
             beep.play();
             i++;
             
-            // Add swap indicators
-            addComparisonIndicator(i, "Swapping ⇄", 'orange');
-            addComparisonIndicator(j, "Swapping ⇄", 'orange');
-            
-            swapping(i, j);
-            incrementSwap();
-            
-            await waitforme(delay);
-            
-            // Remove swap indicators
-            removeComparisonIndicator(i);
-            removeComparisonIndicator(j);
-            
-            // Update colors after swap
-            barContainers[i].querySelector('.bar').style.background = 'orange';
-            if (i != j) barContainers[j].querySelector('.bar').style.background = 'orange';
+            // Only swap and count if elements are different (not already in correct position)
+            if (i !== j) {
+                // Add swap indicators
+                addComparisonIndicator(i, "Swapping ⇄", 'orange');
+                addComparisonIndicator(j, "Swapping ⇄", 'orange');
+                
+                swapping(i, j);
+                incrementSwap();
+                
+                await waitforme(delay);
+                
+                // Remove swap indicators
+                removeComparisonIndicator(i);
+                removeComparisonIndicator(j);
+                
+                // Update colors after swap
+                barContainers[i].querySelector('.bar').style.background = 'orange';
+                barContainers[j].querySelector('.bar').style.background = 'orange';
+            } else {
+                // Element is already in correct position, just update color
+                barContainers[i].querySelector('.bar').style.background = 'orange';
+            }
         } else {
             barContainers[j].querySelector('.bar').style.background = 'pink';
         }
@@ -192,18 +199,21 @@ async function partition(barContainers, low, high) {
     i++;
     await waitforme(delay);
     
-    // Add final swap indicators for pivot
-    addComparisonIndicator(i, "Final Swap ⇄", 'purple');
-    addComparisonIndicator(high, "Final Swap ⇄", 'purple');
-    
-    swapping(i, high);
-    incrementSwap();
-    
-    await waitforme(delay);
-    
-    // Remove swap indicators
-    removeComparisonIndicator(i);
-    removeComparisonIndicator(high);
+    // Only swap pivot if it's not already in the correct position
+    if (i !== high) {
+        // Add final swap indicators for pivot
+        addComparisonIndicator(i, "Final Swap ⇄", 'purple');
+        addComparisonIndicator(high, "Final Swap ⇄", 'purple');
+        
+        swapping(i, high);
+        incrementSwap();
+        
+        await waitforme(delay);
+        
+        // Remove swap indicators
+        removeComparisonIndicator(i);
+        removeComparisonIndicator(high);
+    }
     
     // Update colors after final swap
     barContainers[high].querySelector('.bar').style.background = 'pink';

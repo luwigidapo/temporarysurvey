@@ -56,6 +56,10 @@ Space Complexity: O(1) - In-place sorting`;
             done.play();
             selectText.innerHTML = `Sorting Complete!`;
             stopTimer();
+            // Final coloring
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.style.background = 'rgb(0,255,0)';
+            });
         }
     } catch (e) {
         console.log("Sorting was interrupted");
@@ -102,7 +106,7 @@ async function InsertionSort() {
         while (comparisonResult) {
             incrementComparison();
             
-            // Clear previous indicators before adding new ones
+            // Clear previous indicators
             removeComparisonIndicator(j);
             
             // Add comparison indicator
@@ -116,19 +120,19 @@ async function InsertionSort() {
             
             barContainers[j].querySelector('.bar').style.background = 'rgb(9, 102, 2)';
             
-            // Add shift indicator (temporary, will be removed after shift)
-            const shiftIndicator = addTemporaryComparisonIndicator(j, "Shifting →", 'red');
-            
-            // Perform the shift
+            // Perform the shift - this counts as one swap/move operation
             barContainers[j + 1].querySelector('.bar').style.height = barContainers[j].querySelector('.bar').style.height;
             barContainers[j + 1].querySelector('.bar-number').textContent = barContainers[j].querySelector('.bar-number').textContent;
             
-            j--;
+            // Add shift indicator
+            const shiftIndicator = addComparisonIndicator(j, "Shifting →", 'red');
             
+            incrementSwap(); // Count this shift operation
             beep.play();
+            
             await waitforme(delay);
             
-            // Remove the shift indicator immediately after the shift
+            // Remove the shift indicator
             if (shiftIndicator && shiftIndicator.parentNode) {
                 shiftIndicator.parentNode.removeChild(shiftIndicator);
             }
@@ -144,6 +148,8 @@ async function InsertionSort() {
                 barContainers[k].querySelector('.bar').style.background = 'rgb(3, 252, 11)';
             }
 
+            j--;
+            
             if (sortOrder === 'ascending') {
                 comparisonResult = j >= 0 && parseInt(barContainers[j].querySelector('.bar-number').textContent) > keyValue;
             } else {
@@ -165,8 +171,6 @@ async function InsertionSort() {
             if (j + 1 !== i) {
                 removeComparisonIndicator(j + 1);
             }
-            
-            incrementSwap();
         }
     }
     
@@ -178,12 +182,14 @@ async function InsertionSort() {
     }
 }
 
-// Modified helper functions to prevent stuck indicators
+// Helper functions for comparison indicators
 function addComparisonIndicator(index, text, color) {
     // First remove any existing indicator at this position
     removeComparisonIndicator(index);
     
     const barContainer = document.querySelectorAll('.bar-container')[index];
+    if (!barContainer) return null;
+    
     const indicator = document.createElement('div');
     indicator.className = 'comparison-indicator';
     indicator.textContent = text;
@@ -215,10 +221,6 @@ function addComparisonIndicator(index, text, color) {
     barContainer.appendChild(indicator);
     
     return indicator;
-}
-
-function addTemporaryComparisonIndicator(index, text, color) {
-    return addComparisonIndicator(index, text, color);
 }
 
 function removeComparisonIndicator(index) {

@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="prism.css">
-    <title>Queue Visualizer</title>
+    <title>Queue Visualizer (Array Implementation)</title>
     <style>
         body {
             margin: 0;
@@ -140,24 +139,6 @@
             border-radius: 4px;
         }
 
-        #animation-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        #skip-back-btn, #step-back-btn, #pause-btn, 
-        #step-forward-btn, #skip-forward-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            background-color: #3498db;
-            color: white;
-        }
-
         #speed-control {
             display: flex;
             justify-content: center;
@@ -168,29 +149,6 @@
 
         #speed-slider {
             width: 200px;
-        }
-
-        #canvas-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        #width-input, #height-input {
-            padding: 8px;
-            width: 80px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        #change-canvas-btn, #move-controls-btn {
-            padding: 8px 15px;
-            background-color: #9b59b6;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
         }
 
         #main-content {
@@ -210,30 +168,12 @@
             transition: all 0.3s ease;
         }
 
-        #definition-panel {
+        #definition-panel, #code-panel, #complexity-panel {
             background-color: white;
             border-radius: 5px;
             padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 1;
-        }
-
-        #code-panel {
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 2;
-        }
-
-        #complexity-panel {
-            background-color: white;
-            border-radius: 5px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 1;
         }
 
         #visualization {
@@ -251,71 +191,116 @@
             position: relative;
             display: flex;
             flex-direction: column;
+            align-items: center;
             justify-content: center;
         }
 
-        #queue-visual {
+        #array-container {
             position: relative;
-            height: 300px;
-            margin: 20px 0;
+            margin: 40px 0;
         }
 
-        .node {
-            position: absolute;
+        .array-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .array-boxes {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .array-box {
             width: 60px;
             height: 60px;
-            background: #3498db;
-            border-radius: 50%;
+            border: 2px solid #2c3e50;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
+            font-size: 16px;
+            background-color: #ecf0f1;
+            position: relative;
             transition: all 0.5s ease;
-            z-index: 2;
         }
 
-        .node.front {
-            background: #2ecc71;
+        .array-box.filled {
+            background-color: #3498db;
+            color: white;
         }
 
-        .node.rear {
-            background: #e74c3c;
+        .array-box.head-position {
+            border-color: #2ecc71;
+            border-width: 3px;
         }
 
-        .pointer {
-            position: absolute;
+        .array-box.tail-position {
+            border-color: #e74c3c;
+            border-width: 3px;
+        }
+
+        .array-index {
+            width: 30px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
             color: #2c3e50;
-            z-index: 3;
+            font-size: 14px;
         }
 
-        .pointer.front {
-            top: -30px;
+        .pointer-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
         }
 
-        .pointer.rear {
-            bottom: -30px;
+        .pointer-box {
+            width: 80px;
+            height: 50px;
+            border: 2px solid #2c3e50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            background-color: #f8f9fa;
+            position: relative;
         }
 
-        .link {
+        .pointer-box.head {
+            border-color: #2ecc71;
+            background-color: #d5f4e6;
+        }
+
+        .pointer-box.tail {
+            border-color: #e74c3c;
+            background-color: #fdeaea;
+        }
+
+        .pointer-label {
             position: absolute;
-            height: 4px;
-            background: #2c3e50;
-            z-index: 1;
-            transform-origin: left center;
-            transition: all 0.5s ease;
+            top: -25px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
-        .arrow {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-left: 12px solid #2c3e50;
-            z-index: 1;
-            transition: all 0.5s ease;
+        .pointer-box.head .pointer-label {
+            color: #2ecc71;
+        }
+
+        .pointer-box.tail .pointer-label {
+            color: #e74c3c;
         }
 
         #status {
@@ -323,6 +308,7 @@
             font-weight: bold;
             margin-top: 20px;
             color: #2c3e50;
+            font-size: 18px;
         }
 
         .panel-title {
@@ -338,9 +324,6 @@
             background-color: #f5f5f5;
             padding: 10px;
             border-radius: 4px;
-        }
-
-        .language-java {
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             line-height: 1.5;
@@ -354,6 +337,44 @@
             width: 100%;
         }
 
+        .animate-enqueue {
+            animation: enqueueAnimation 0.5s ease-in-out;
+        }
+
+        .animate-dequeue {
+            animation: dequeueAnimation 0.5s ease-in-out;
+        }
+
+        @keyframes enqueueAnimation {
+            0% {
+                transform: scale(1.2);
+                background-color: #2ecc71;
+            }
+            50% {
+                transform: scale(1.4);
+                background-color: #27ae60;
+            }
+            100% {
+                transform: scale(1);
+                background-color: #3498db;
+            }
+        }
+
+        @keyframes dequeueAnimation {
+            0% {
+                transform: scale(1);
+                background-color: #3498db;
+            }
+            50% {
+                transform: scale(1.2);
+                background-color: #e74c3c;
+            }
+            100% {
+                transform: scale(1);
+                background-color: #ecf0f1;
+            }
+        }
+
         @media (max-width: 768px) {
             #main-content {
                 flex-direction: column;
@@ -365,17 +386,28 @@
                 border-right: none;
                 border-bottom: 1px solid #ddd;
             }
+            
+            .array-box {
+                width: 45px;
+                height: 45px;
+                font-size: 14px;
+            }
+            
+            .array-index {
+                width: 45px;
+                height: 45px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <section id="fullbody">
         <header>
-             <div id="mainlink">
+            <div id="mainlink">
                 <a href="../../index.html">Home</a>
             </div>
-            </div>
-            <h1 id="name"><span class="big">Q</span>UEUE <span class="big">VISUALIZER</span> (Linked List Implementation)</h1>
+            <h1 id="name"><span class="big">Q</span>UEUE <span class="big">VISUALIZER</span> (Array Implementation)</h1>
             <div id="basic_btn">
                 <div class="gen">
                     <button id="back-btn">Back to Sorting</button>
@@ -397,108 +429,391 @@
             <button id="clear-btn">Clear Queue</button>
         </div>
 
-        <div id="animation-controls">
-            <button id="skip-back-btn">Skip Back</button>
-            <button id="step-back-btn">Step Back</button>
-            <button id="pause-btn">Pause</button>
-            <button id="step-forward-btn">Step Forward</button>
-            <button id="skip-forward-btn">Skip Forward</button>
-        </div>
-
         <div id="speed-control">
             <span>Animation Speed:</span>
             <input type="range" id="speed-slider" min="1" max="10" value="5">
         </div>
 
-        <div id="canvas-controls">
-            <span>W:</span>
-            <input type="number" id="width-input" value="1000" min="500" max="1500">
-            <span>H:</span>
-            <input type="number" id="height-input" value="500" min="300" max="800">
-            <button id="change-canvas-btn">Change Canvas Size</button>
-            <button id="move-controls-btn">Move Controls</button>
-        </div>
-
         <div id="main-content">
             <div id="info-panel">
                 <div id="definition-panel">
-                    <h3 class="panel-title">Queue Definition</h3>
+                    <h3 class="panel-title">Queue Definition (Array Implementation)</h3>
                     <div id="algorithm-definition">
-                        <p><strong>Queue</strong> is a linear data structure that follows the First-In-First-Out (FIFO) principle. Elements are added at the rear and removed from the front.</p>
+                        <p><strong>Queue</strong> is a linear data structure that follows the First-In-First-Out (FIFO) principle. In array implementation, we use head and tail pointers to track front and rear positions.</p>
                         <p><strong>Main Operations:</strong></p>
                         <ol>
-                            <li><strong>Enqueue:</strong> Adds an item to the rear of the queue</li>
-                            <li><strong>Dequeue:</strong> Removes an item from the front of the queue</li>
+                            <li><strong>Enqueue:</strong> Adds an item at the tail position</li>
+                            <li><strong>Dequeue:</strong> Removes an item from the head position</li>
                         </ol>
-                        <p>Queue has many applications including CPU scheduling, IO buffers, and breadth-first search.</p>
+                        <p>Array implementation provides O(1) operations but has fixed size limitation.</p>
                     </div>
                 </div>
                 <div id="code-panel">
-                    <h3 class="panel-title">Code in (Java)</h3>
-                    <pre id="code_java"><code class="language-java">class Node {
-    int data;
-    Node next;
+                    <h3 class="panel-title">Code in Java</h3>
+                    <pre id="code_java"><code>class ArrayQueue {
+    private int[] queue;
+    private int head, tail, size, capacity;
     
-    public Node(int data) {
-        this.data = data;
-        this.next = null;
-    }
-}
-
-class Queue {
-    private Node front, rear;
-    
-    public Queue() {
-        this.front = this.rear = null;
+    public ArrayQueue(int capacity) {
+        this.capacity = capacity;
+        this.queue = new int[capacity];
+        this.head = 0;
+        this.tail = -1;
+        this.size = 0;
     }
     
     public void enqueue(int data) {
-        Node newNode = new Node(data);
-        if (rear == null) {
-            front = rear = newNode;
-            return;
+        if (size == capacity) {
+            throw new RuntimeException("Queue is full");
         }
-        rear.next = newNode;
-        rear = newNode;
+        tail = (tail + 1) % capacity;
+        queue[tail] = data;
+        size++;
     }
     
     public int dequeue() {
-        if (front == null) {
+        if (size == 0) {
             throw new RuntimeException("Queue is empty");
         }
-        int data = front.data;
-        front = front.next;
-        if (front == null) {
-            rear = null;
-        }
+        int data = queue[head];
+        queue[head] = 0; // Optional: clear the slot
+        head = (head + 1) % capacity;
+        size--;
         return data;
     }
     
     public boolean isEmpty() {
-        return front == null;
+        return size == 0;
+    }
+    
+    public boolean isFull() {
+        return size == capacity;
     }
 }</code></pre>
                 </div>
                 <div id="complexity-panel">
                     <h3 class="panel-title">Complexity Analysis</h3>
-                    <pre id="time"><code class="language-java">Time Complexity:
+                    <pre id="time"><code>Time Complexity:
 - Enqueue: O(1)
 - Dequeue: O(1)
 - Peek: O(1)
 
-Space Complexity: O(n) - where n is number of elements in queue</code></pre>
+Space Complexity: O(n) - where n is the capacity of array
+
+Advantages:
+- Fixed memory usage
+- Cache-friendly access pattern
+- Simple implementation
+
+Disadvantages:
+- Fixed size limitation
+- Memory waste when not full</code></pre>
                 </div>
             </div>
-            <div id="visualization">
+                            <div id="visualization">
                 <div id="queue-container">
-                    <div id="queue-visual"></div>
-                    <div id="status">Animation Completed</div>
+                    <div id="array-container">
+                        <div class="array-boxes" id="array-boxes"></div>
+                    </div>
+                    <div class="pointer-container">
+                        <div class="pointer-box head">
+                            <div class="pointer-label">HEAD</div>
+                            <span id="head-value">0</span>
+                        </div>
+                        <div class="pointer-box tail">
+                            <div class="pointer-label">TAIL</div>
+                            <span id="tail-value">0</span>
+                        </div>
+                    </div>
+                    <div id="status">Queue is empty</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <script src="prism.js"></script>
-    <script src="queue.js"></script>
+    <script>
+        const queueVisual = document.querySelector("#array-container");
+        const arrayBoxes = document.querySelector("#array-boxes");
+        const arrayIndices = document.querySelector("#array-indices");
+        const sizeValue = document.querySelector("#size_value");
+        const queueInput = document.querySelector("#queue-input");
+        const enqueueBtn = document.querySelector("#enqueue-btn");
+        const dequeueBtn = document.querySelector("#dequeue-btn");
+        const clearBtn = document.querySelector("#clear-btn");
+        const backBtn = document.querySelector("#back-btn");
+        const maximizeBtn = document.querySelector("#maximize-btn");
+        const statusDisplay = document.querySelector("#status");
+        const speedSlider = document.querySelector("#speed-slider");
+        const headValue = document.querySelector("#head-value");
+        const tailValue = document.querySelector("#tail-value");
+
+        class ArrayQueue {
+            constructor(capacity = 14) {
+                this.capacity = capacity;
+                this.queue = new Array(capacity).fill(null);
+                this.head = 0;
+                this.tail = 0;  // Start tail at 0 instead of -1
+                this.size = 0;
+            }
+
+            enqueue(value) {
+                if (this.size === this.capacity) {
+                    throw new Error("Queue is full");
+                }
+                this.queue[this.tail] = value;
+                this.tail = (this.tail + 1) % this.capacity;
+                this.size++;
+            }
+
+            dequeue() {
+                if (this.size === 0) {
+                    throw new Error("Queue is empty");
+                }
+                const value = this.queue[this.head];
+                this.queue[this.head] = null;
+                this.head = (this.head + 1) % this.capacity;
+                this.size--;
+                return value;
+            }
+
+            clear() {
+                this.queue.fill(null);
+                this.head = 0;
+                this.tail = 0;  // Reset tail to 0
+                this.size = 0;
+            }
+
+            isEmpty() {
+                return this.size === 0;
+            }
+
+            isFull() {
+                return this.size === this.capacity;
+            }
+
+            getCurrentTailPosition() {
+                // Return the position where the next element would be inserted
+                return this.size === 0 ? 0 : this.tail;
+            }
+        }
+
+        const queue = new ArrayQueue(14);
+        let animationSpeed = 500; // Default speed
+        let isAnimating = false;
+
+        function initializeVisualization() {
+            // Create array boxes (0-13) vertically with numbers beside each box
+            arrayBoxes.innerHTML = '';
+            
+            for (let i = 0; i < 14; i++) {
+                // Create row container
+                const row = document.createElement('div');
+                row.className = 'array-row';
+                
+                // Create index number
+                const index = document.createElement('div');
+                index.className = 'array-index';
+                index.textContent = i;
+                
+                // Create box
+                const box = document.createElement('div');
+                box.className = 'array-box';
+                box.id = `box-${i}`;
+                
+                // Add index and box to row
+                row.appendChild(index);
+                row.appendChild(box);
+                
+                // Add row to container
+                arrayBoxes.appendChild(row);
+            }
+            
+            updateVisualization();
+        }
+
+        function updateVisualization() {
+            // Update size display
+            sizeValue.textContent = queue.size;
+            
+            // Update head and tail displays
+            headValue.textContent = queue.isEmpty() ? '0' : queue.head;
+            tailValue.textContent = queue.getCurrentTailPosition();
+            
+            // Update array boxes
+            for (let i = 0; i < 14; i++) {
+                const box = document.getElementById(`box-${i}`);
+                box.className = 'array-box';
+                box.textContent = '';
+                
+                if (queue.queue[i] !== null) {
+                    box.classList.add('filled');
+                    box.textContent = queue.queue[i];
+                }
+                
+                // Highlight head and tail positions
+                if (!queue.isEmpty()) {
+                    if (i === queue.head) {
+                        box.classList.add('head-position');
+                    }
+                }
+                
+                // Always show tail position (where next element will go)
+                if (i === queue.getCurrentTailPosition()) {
+                    box.classList.add('tail-position');
+                }
+            }
+            
+            // Update status
+            if (queue.isEmpty()) {
+                statusDisplay.textContent = "Queue is empty - Next element will be added at position 0";
+            } else if (queue.isFull()) {
+                statusDisplay.textContent = "Queue is full";
+            } else {
+                statusDisplay.textContent = `Queue has ${queue.size} element(s) - Next element will be added at position ${queue.getCurrentTailPosition()}`;
+            }
+        }
+
+        async function animateEnqueue(value) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            try {
+                if (queue.isFull()) {
+                    alert("Queue is full! Cannot enqueue more elements.");
+                    return;
+                }
+                
+                statusDisplay.textContent = `Enqueuing ${value}...`;
+                
+                // Get current tail position (where element will be added)
+                const tailPosition = queue.getCurrentTailPosition();
+                const box = document.getElementById(`box-${tailPosition}`);
+                
+                // Add enqueue animation
+                box.classList.add('animate-enqueue');
+                
+                // Perform enqueue operation
+                queue.enqueue(value);
+                
+                // Wait for animation
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+                
+                // Remove animation class
+                box.classList.remove('animate-enqueue');
+                
+                // Update visualization
+                updateVisualization();
+                
+                statusDisplay.textContent = `Enqueued ${value} at position ${tailPosition}`;
+                
+            } catch (error) {
+                statusDisplay.textContent = error.message;
+            } finally {
+                isAnimating = false;
+            }
+        }
+
+        async function animateDequeue() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            try {
+                if (queue.isEmpty()) {
+                    alert("Queue is empty! Cannot dequeue.");
+                    return;
+                }
+                
+                statusDisplay.textContent = "Dequeuing...";
+                
+                const currentHead = queue.head;
+                const box = document.getElementById(`box-${currentHead}`);
+                const value = queue.queue[currentHead];
+                
+                // Add dequeue animation
+                box.classList.add('animate-dequeue');
+                
+                // Wait for animation
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+                
+                // Perform dequeue operation
+                queue.dequeue();
+                
+                // Remove animation class
+                box.classList.remove('animate-dequeue');
+                
+                // Update visualization
+                updateVisualization();
+                
+                statusDisplay.textContent = `Dequeued ${value} from position ${currentHead}`;
+                
+            } catch (error) {
+                statusDisplay.textContent = error.message;
+            } finally {
+                isAnimating = false;
+            }
+        }
+
+        function clearQueue() {
+            if (queue.isEmpty()) {
+                alert("Queue is already empty");
+                return;
+            }
+            
+            if (confirm("Are you sure you want to clear the queue?")) {
+                queue.clear();
+                updateVisualization();
+                statusDisplay.textContent = "Queue cleared";
+            }
+        }
+
+        // Event listeners
+        enqueueBtn.addEventListener('click', function() {
+            const value = queueInput.value.trim();
+            if (value === "") {
+                alert("Please enter a value to enqueue");
+                return;
+            }
+            if (isNaN(value)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            animateEnqueue(parseInt(value));
+            queueInput.value = "";
+        });
+
+        dequeueBtn.addEventListener('click', animateDequeue);
+        clearBtn.addEventListener('click', clearQueue);
+
+        // Allow pressing Enter to enqueue
+        queueInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const value = queueInput.value.trim();
+                if (value !== "" && !isNaN(value)) {
+                    animateEnqueue(parseInt(value));
+                    queueInput.value = "";
+                }
+            }
+        });
+
+        // Animation speed control
+        speedSlider.addEventListener('input', function() {
+            animationSpeed = 1000 - (this.value * 90);
+        });
+
+        // Back button
+        backBtn.addEventListener('click', function() {
+            window.location.href = 'sorting.html';
+        });
+
+        // Maximize button
+        maximizeBtn.addEventListener('click', function() {
+            document.getElementById('fullbody').classList.toggle('maximized');
+            this.textContent = document.getElementById('fullbody').classList.contains('maximized') ? 
+                'Minimize' : 'Maximize';
+        });
+
+        // Initialize the visualization
+        initializeVisualization();
+    </script>
 </body>
 </html>

@@ -4,6 +4,11 @@ const arraySize = document.querySelector('#size_slider');
 const selectText = document.querySelector('.selected');
 output.innerHTML = arraySize.value;
 
+// Audio files
+var beep = new Audio('beep.mp3');
+var mouseclick = new Audio('Mouseclick.mp3');
+var done = new Audio('wrong.mp3');
+
 let comparisonCount = 0;
 let swapCount = 0;
 let sortStartTime = 0;
@@ -116,6 +121,7 @@ function createNewArray(arrayVal, customArray = null) {
         const barContainer = document.createElement("div");
         barContainer.className = 'bar-container';
         barContainer.style.width = `${(96 / array.length)}vw`;
+        barContainer.style.position = 'relative'; // Important for indicators
 
         const numberLabel = document.createElement("div");
         numberLabel.className = 'bar-number';
@@ -125,6 +131,7 @@ function createNewArray(arrayVal, customArray = null) {
         const bar = document.createElement("div");
         bar.style.height = `${array[i].height}px`;
         bar.className = 'bar';
+        bar.style.background = 'cyan'; // Default color
 
         barContainer.appendChild(numberLabel);
         barContainer.appendChild(bar);
@@ -201,6 +208,57 @@ function createComparisonIndicator(index1, index2) {
 
 function removeComparisonIndicators() {
     document.querySelectorAll('.comparison-arrow').forEach(arrow => arrow.parentNode?.remove());
+    // Also remove any comparison indicators from insertion sort
+    document.querySelectorAll('.comparison-indicator').forEach(indicator => {
+        indicator.parentNode?.removeChild(indicator);
+    });
+}
+
+// Reset bar colors helper
+function resetBarColors() {
+    document.querySelectorAll('.bar').forEach(bar => {
+        bar.style.background = 'cyan';
+    });
+}
+
+// Add comparison indicator for heap sort
+function addHeapComparisonIndicator(index, text, color) {
+    removeHeapComparisonIndicator(index);
+    
+    const barContainer = document.querySelectorAll('.bar-container')[index];
+    const indicator = document.createElement('div');
+    indicator.className = 'heap-comparison-indicator';
+    indicator.textContent = text;
+    indicator.style.position = 'absolute';
+    indicator.style.top = '-25px';
+    indicator.style.left = '50%';
+    indicator.style.transform = 'translateX(-50%)';
+    indicator.style.backgroundColor = color || '#333';
+    indicator.style.color = 'white';
+    indicator.style.padding = '2px 5px';
+    indicator.style.borderRadius = '3px';
+    indicator.style.fontSize = '10px';
+    indicator.style.zIndex = '10';
+    indicator.style.whiteSpace = 'nowrap';
+    
+    barContainer.appendChild(indicator);
+    return indicator;
+}
+
+function removeHeapComparisonIndicator(index) {
+    const barContainer = document.querySelectorAll('.bar-container')[index];
+    if (!barContainer) return;
+    
+    const indicator = barContainer.querySelector('.heap-comparison-indicator');
+    if (indicator) {
+        barContainer.removeChild(indicator);
+    }
+}
+
+function removeAllHeapIndicators() {
+    document.querySelectorAll('.heap-comparison-indicator').forEach(indicator => {
+        indicator.parentNode?.removeChild(indicator);
+    });
 }
 
 async function waitforme(milisec) {
@@ -352,14 +410,38 @@ document.getElementById('descending-btn').addEventListener('click', function() {
 document.getElementById('pause-btn').addEventListener('click', togglePause);
 document.getElementById('reset-btn').addEventListener('click', resetSorting);
 
-// Code display cycling
+// Code examples for different algorithms and languages
 const codeExamples = {
-    'InsertionSort': `void insertionSort(int arr[]) {
+    'BubbleSort': {
+        'java': `void bubbleSort(int arr[]) {
+    int n = arr.length;
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (arr[j] > arr[j+1]) {
+                int temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+}`,
+        'cpp': `void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n-1; i++) {
+        for (int j = 0; j < n-i-1; j++) {
+            if (arr[j] > arr[j+1]) {
+                swap(arr[j], arr[j+1]);
+            }
+        }
+    }
+}`
+    },
+    'InsertionSort': {
+        'java': `void insertionSort(int arr[]) {
     int n = arr.length;
     for (int i = 1; i < n; ++i) {
         int key = arr[i];
         int j = i - 1;
-
+        
         while (j >= 0 && arr[j] > key) {
             arr[j + 1] = arr[j];
             j = j - 1;
@@ -367,17 +449,35 @@ const codeExamples = {
         arr[j + 1] = key;
     }
 }`,
-    'HeapSort': `void heapSort(int arr[]) {
+        'cpp': `void insertionSort(int arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        int key = arr[i];
+        int j = i - 1;
+        
+        while (j >= 0 && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}`
+    },
+    'HeapSort': {
+        'java': `void heapSort(int arr[]) {
     int n = arr.length;
 
+    // Build heap (rearrange array)
     for (int i = n / 2 - 1; i >= 0; i--)
         heapify(arr, n, i);
 
+    // Extract elements from heap
     for (int i = n - 1; i > 0; i--) {
+        // Move current root to end
         int temp = arr[0];
         arr[0] = arr[i];
         arr[i] = temp;
 
+        // Heapify the reduced heap
         heapify(arr, i, 0);
     }
 }
@@ -401,7 +501,101 @@ void heapify(int arr[], int n, int i) {
         heapify(arr, n, largest);
     }
 }`,
-    // Add other algorithms similarly...
+        'cpp': `void heapSort(int arr[], int n) {
+    // Build heap
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    // Extract elements from heap
+    for (int i = n - 1; i > 0; i--) {
+        swap(arr[0], arr[i]);
+        heapify(arr, i, 0);
+    }
+}
+
+void heapify(int arr[], int n, int i) {
+    int largest = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+
+    if (l < n && arr[l] > arr[largest])
+        largest = l;
+
+    if (r < n && arr[r] > arr[largest])
+        largest = r;
+
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        heapify(arr, n, largest);
+    }
+}`
+    },
+    'MergeSort': {
+        'java': `void mergeSort(int arr[], int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+        
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+        
+        merge(arr, l, m, r);
+    }
+}`,
+        'cpp': `void mergeSort(int arr[], int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+        
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+        
+        merge(arr, l, m, r);
+    }
+}`
+    },
+    'QuickSort': {
+        'java': `void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}`,
+        'cpp': `void quickSort(int arr[], int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}`
+    },
+    'SelectionSort': {
+        'java': `void selectionSort(int arr[]) {
+    int n = arr.length;
+    
+    for (int i = 0; i < n-1; i++) {
+        int min_idx = i;
+        for (int j = i+1; j < n; j++)
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        
+        int temp = arr[min_idx];
+        arr[min_idx] = arr[i];
+        arr[i] = temp;
+    }
+}`,
+        'cpp': `void selectionSort(int arr[], int n) {
+    for (int i = 0; i < n-1; i++) {
+        int min_idx = i;
+        for (int j = i+1; j < n; j++)
+            if (arr[j] < arr[min_idx])
+                min_idx = j;
+        
+        swap(arr[min_idx], arr[i]);
+    }
+}`
+    }
 };
 
 const languages = ['java', 'cpp'];
@@ -434,13 +628,23 @@ sortingButtons.forEach(button => {
     });
 });
 
+// HEAP SORT IMPLEMENTATION
 async function HeapSort() {
     shouldReset = false;
     const barContainers = document.querySelectorAll('.bar-container');
     const n = barContainers.length;
 
-    // Helper function to swap elements
-    async function swap(index1, index2) {
+    // Helper function to swap elements with visual feedback
+    async function swapElements(index1, index2, countSwap = false) {
+        // Highlight bars being swapped
+        barContainers[index1].querySelector('.bar').style.background = 'red';
+        barContainers[index2].querySelector('.bar').style.background = 'red';
+        
+        addHeapComparisonIndicator(index1, 'Swap', 'red');
+        addHeapComparisonIndicator(index2, 'Swap', 'red');
+        
+        await waitforme(delay / 2);
+
         const tempHeight = barContainers[index1].querySelector('.bar').style.height;
         const tempText = barContainers[index1].querySelector('.bar-number').textContent;
 
@@ -450,8 +654,20 @@ async function HeapSort() {
         barContainers[index2].querySelector('.bar').style.height = tempHeight;
         barContainers[index2].querySelector('.bar-number').textContent = tempText;
 
-        incrementSwap(); // Now only increments when swap is actually performed
-        await waitforme(delay); // Added to account for visusalization delay
+        if (countSwap) {
+            incrementSwap();
+        }
+        
+        beep.play();
+        await waitforme(delay / 2);
+        
+        // Remove indicators
+        removeHeapComparisonIndicator(index1);
+        removeHeapComparisonIndicator(index2);
+        
+        // Reset colors
+        barContainers[index1].querySelector('.bar').style.background = 'orange';
+        barContainers[index2].querySelector('.bar').style.background = 'orange';
     }
 
     async function heapify(n, i) {
@@ -459,55 +675,86 @@ async function HeapSort() {
         const l = 2 * i + 1;
         const r = 2 * i + 2;
 
+        // Highlight current node
+        barContainers[i].querySelector('.bar').style.background = 'yellow';
+        addHeapComparisonIndicator(i, 'Root', 'yellow');
+
         if (l < n) {
+            barContainers[l].querySelector('.bar').style.background = 'lightblue';
+            addHeapComparisonIndicator(l, 'Left', 'lightblue');
+            
             incrementComparison();
             if (sortOrder === 'ascending' && parseInt(barContainers[l].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = l;
             } else if (sortOrder === 'descending' && parseInt(barContainers[l].querySelector('.bar-number').textContent) < parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = l;
             }
+            
+            await waitforme(delay / 3);
         }
 
         if (r < n) {
+            barContainers[r].querySelector('.bar').style.background = 'lightgreen';
+            addHeapComparisonIndicator(r, 'Right', 'lightgreen');
+            
             incrementComparison();
             if (sortOrder === 'ascending' && parseInt(barContainers[r].querySelector('.bar-number').textContent) > parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = r;
             } else if (sortOrder === 'descending' && parseInt(barContainers[r].querySelector('.bar-number').textContent) < parseInt(barContainers[largest].querySelector('.bar-number').textContent)) {
                 largest = r;
             }
+            
+            await waitforme(delay / 3);
         }
 
         if (largest !== i) {
-            await swap(i, largest);
+            await swapElements(i, largest, false);
+            
+            // Clear indicators before recursive call
+            removeAllHeapIndicators();
+            resetBarColors();
+            
             await heapify(n, largest);
+        } else {
+            // Clear indicators if no swap needed
+            removeAllHeapIndicators();
+            resetBarColors();
         }
     }
 
-    // Build max heap (rearrange array)
+    // Build heap phase
     for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
         if (shouldReset) {
             resetBarColors();
-            removeComparisonIndicators();
+            removeAllHeapIndicators();
             return;
         }
         await heapify(n, i);
     }
 
-    // Extract elements from the heap one by one
+    // Extraction phase
     for (let i = n - 1; i > 0; i--) {
         if (shouldReset) {
             resetBarColors();
-            removeComparisonIndicators();
+            removeAllHeapIndicators();
             return;
         }
-        await swap(0, i);
+        
+        // This is the main extraction swap - count it
+        await swapElements(0, i, true);
+        
+        // Mark sorted element
+        barContainers[i].querySelector('.bar').style.background = 'green';
+        
         await heapify(i, 0);
     }
 
     if (!shouldReset) {
+        // Final coloring
         barContainers.forEach(container => {
             container.querySelector('.bar').style.background = 'rgb(0,255,0)';
         });
+        removeAllHeapIndicators();
     }
 }
 
@@ -516,6 +763,26 @@ const HeapSortButton = document.querySelector(".HeapSort");
 HeapSortButton.addEventListener('click', async function () {
     mouseclick.play();
     selectText.innerHTML = `Heap Sort (${sortOrder})..`;
+
+    // Update info panels
+    document.getElementById('algorithm-definition').innerHTML = `
+        <p><strong>Heap Sort</strong> is a comparison-based sorting algorithm that uses a binary heap data structure.</p>
+        <p><strong>How it works:</strong></p>
+        <ol>
+            <li>Build a max-heap (or min-heap) from the input data</li>
+            <li>Swap the root element with the last element of the heap</li>
+            <li>Reduce the heap size by 1 and heapify the root</li>
+            <li>Repeat until the heap is empty</li>
+        </ol>
+        <p>This algorithm has an optimal O(n log n) time complexity.</p>
+    `;
+
+    document.getElementById('time').innerHTML = `Time Complexity:
+- Worst Case: O(n log n) - All cases
+- Average Case: O(n log n) - All cases
+- Best Case: O(n log n) - All cases
+
+Space Complexity: O(1) - In-place sorting`;
 
     disableSortingBtn();
     disableSizeSlider();
@@ -538,10 +805,3 @@ HeapSortButton.addEventListener('click', async function () {
     enableSizeSlider();
     enableNewArrayBtn();
 });
-
-// Reset bar colors helper (if not defined elsewhere)
-function resetBarColors() {
-    document.querySelectorAll('.bar').forEach(bar => {
-        bar.style.background = 'cyan';
-    });
-}
